@@ -1,27 +1,32 @@
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
 
-	import org.lwjgl.glfw.*;
-	import org.lwjgl.opengl.*;
-	import org.lwjgl.system.*;
-	import java.nio.*;
-	import static org.lwjgl.glfw.Callbacks.*;
-	import static org.lwjgl.glfw.GLFW.*;
-	import static org.lwjgl.opengl.GL44.*;
-	import static org.lwjgl.system.MemoryStack.*;
-	import static org.lwjgl.system.MemoryUtil.*;
+import java.nio.*;
+import java.util.Random;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
 public class MainWindow {
 
 
 		// The window handle
-		private long window;
-		private ShaderProgram _mainShader;
-		private Buffer _mainBuffer;
-		private VertexBuffer _mainBufferVertex;
-		float[] vertices = new float[]{
-			     0.0f,  0.5f, -2.05f,
-			    -0.5f, -0.5f,-2.05f,
-			     0.5f, -0.5f, -2.05f
-			};
+		public static long window;
 		private World _mainWorld;
+		private GameObject _earth;
+		private int wave=1;
+		private int tick=500;
+		private int max_tick=500;
 		public void Run() {	
 			Init();
 			Loop();
@@ -39,6 +44,7 @@ public class MainWindow {
 			glfwDefaultWindowHints(); 
 			glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); 
 			glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
 			window = glfwCreateWindow(500, 500, "Hello World!", NULL, NULL);
 			if ( window == NULL )
 				throw new RuntimeException("Failed to create the GLFW window");
@@ -57,43 +63,97 @@ public class MainWindow {
 					(vidmode.height() - pHeight.get(0)) / 2
 				);
 			} 
-			glfwMakeContextCurrent(window);
+			 GLFW.glfwMakeContextCurrent(window);
+			
 			glfwSwapInterval(1);
 			glfwShowWindow(window);
 			
 		}
-
-		private void Loop() {
+		private void CheckKey() {
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+				World.Instance().GetPlayer().Move(new Vector3f(0.1f,0,0));
+			}
+			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+				World.Instance().GetPlayer().Move(new Vector3f(-0.1f,0,0));
 			
-			GL.createCapabilities();
-			_mainWorld=World.Instance();
-			_mainWorld.CreatePerpective((float) Math.toRadians(60.0f), 0.01f, 1000.0f, 1);
-			_mainBuffer=new Buffer(GL_ARRAY_BUFFER);
-		 _mainBufferVertex=new VertexBuffer(3);
-			_mainShader=new ShaderProgram("standart_shader.fs","standart_shader.vs");
+			}
+			if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+				World.Instance().GetPlayer().Shot();
+			
+		}
+		private void InitMainShader() {
+			ShaderProgram _mainShader=new ShaderProgram("standart_shader.fs","standart_shader.vs");
 			try {
 				_mainShader.CreateUniform("projectionMatrix");
+				_mainShader.CreateUniform("worldMatrix");
+				_mainShader.CreateUniform("color");
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				
+			
+				System.out.print(e.toString());
 			}
+			World.Instance().CreateMainShader(_mainShader);
+		}
+		private void InitWorld() {
+			_mainWorld=World.Instance();
+			_mainWorld.CreatePerpective((float) Math.toRadians(90.0f), 0.01f, 1000.0f, 1);		
 			
-			_mainBuffer.InitFloatData(vertices);
-		
-			
-			glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+		}
+		private void CreateAL() {
+			long device = ALC10.alcOpenDevice((ByteBuffer) null);
+			    ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+			    long context = ALC10.alcCreateContext(device, (IntBuffer) null);
+			    ALC10.alcMakeContextCurrent(context);
+			    AL.createCapabilities(deviceCaps);
+		}
+		private void InitEarth() {
+			_earth=new PlaneObject(World.Instance().GetMainShader());
+			_earth.SetRotate(new Vector3f(-90,0,0));
+			_earth.SetPosition(new Vector3f(0,-3,5));
+			_earth.SetScale(new Vector3f(10,1000,1));
+			_earth.SetColor(new Vector4f(0,0.7f,0,1));
+		}
+		private void CreateWave() {
+				System.out.print("CREATE WAVE");
+				Random random = new Random();
+				for(int count=1;count<5+(wave*2);count++) {
+
+					Soldier soldier=new Soldier(EnemyType.Soldier,random.nextInt(1,5),random.nextFloat(0.1f,0.2f));
+					double min=-4;
+					double max=4;
+					soldier.GetGameObject().SetPosition(new Vector3f(random.nextFloat(-4f,4f),-1.5f,-200+random.nextInt(15)));
+					soldier.GetGameObject().SetColor(new Vector4f(random.nextFloat(),random.nextFloat(),random.nextFloat(),1));
+					World.Instance().AddEnemy(soldier);
+				}
+				wave+=1;
+				tick=max_tick;
+				if(max_tick>100)
+					max_tick-=10;
+		}
+		private void Loop() {
+			 GL.createCapabilities();
+			CreateAL();
+			InitWorld();
+			InitMainShader();
+			InitEarth();
+			CreateWave();
+			_mainWorld.CreateNewPlayer();
+			glClearColor(0.3f, 0.3f, 1.0f, 0.0f);
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LESS); 
+
 			while ( !glfwWindowShouldClose(window) ) {
-	
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-				_mainShader.SetUniform("projectionMatrix", _mainWorld.GetPerspective());
-				_mainShader.Use();
-				_mainBufferVertex.BindBuffer();
-				_mainBuffer.BindBuffer();
-				_mainBufferVertex.EnableBuffer();
-				  glDrawArrays(GL_TRIANGLES, 0, 3);
+				_earth.Draw();
 				
+				World.Instance().GetPlayer().Draw();
+				World.Instance().UpdateWorld();
 				glfwSwapBuffers(window); 
 				glfwPollEvents();
+				CheckKey();
+				tick-=1;
+				if(tick<=0)
+					CreateWave();
+				
 			}
 		}
 

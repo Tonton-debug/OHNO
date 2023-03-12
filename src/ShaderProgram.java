@@ -1,4 +1,5 @@
 	import static org.lwjgl.opengl.GL44.*;
+	import org.joml.Vector4f;
 
 import java.nio.FloatBuffer;
 import java.nio.file.*;
@@ -6,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 public final class ShaderProgram {
 	private int _programId=0;
@@ -25,12 +27,19 @@ public ShaderProgram(String fsShader,String vsShader)  {
 	}
 	
 }
-public void SetUniform(String uniformName, Matrix4f value) {
+public <T> void SetUniform(String uniformName, T value) {
     // Dump the matrix into a float buffer
     try (MemoryStack stack = MemoryStack.stackPush()) {
-        FloatBuffer fb = stack.mallocFloat(16);
-        value.get(fb);
-        glUniformMatrix4fv(_uniformsMap.get(uniformName), false, fb);
+     
+        if(value instanceof Matrix4f) {
+        	   FloatBuffer fb;
+        	fb= stack.mallocFloat(16);
+              ((Matrix4f)value).get(fb);
+        	 glUniformMatrix4fv(_uniformsMap.get(uniformName), false, fb);
+        }else if(value instanceof Vector4f){
+        	Vector4f vector=(Vector4f)value;
+        	 glUniform4f(_uniformsMap.get(uniformName),vector.x,vector.y,vector.z,vector.w);
+        }
     }
 }
 public void CreateUniform(String uniformName) throws Exception {

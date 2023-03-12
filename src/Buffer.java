@@ -22,7 +22,11 @@ public Buffer(int typeBuffer)  {
 public void InitFloatData(float[] bufferFloats) {
 	_floatData=bufferFloats;
 	_floatsBuffer = MemoryUtil.memAllocFloat(bufferFloats.length);
-	_floatsBuffer.put(bufferFloats).flip();	
+	System.out.print("DW");
+	_floatsBuffer.put(bufferFloats);
+	java.nio.Buffer get=((java.nio.Buffer)_floatsBuffer);
+	get.flip();
+	_floatsBuffer=(FloatBuffer)get;
 	BindBuffer();
 	glBufferData(GL_ARRAY_BUFFER, _floatsBuffer, GL_STATIC_DRAW);
 	MemoryUtil.memFree(_floatsBuffer);

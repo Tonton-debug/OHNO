@@ -112,15 +112,21 @@ public class MainWindow {
 			_earth.SetScale(new Vector3f(10,1000,1));
 			_earth.SetColor(new Vector4f(0,0.7f,0,1));
 		}
+	    private static double getRandom(int min, int max) {
+	        if (min >= max) {
+	            throw new IllegalArgumentException("Invalid range [" + min + ", " + max + "]");
+	        }
+	        return min + Math.random() * (max - min);
+	    }
 		private void CreateWave() {
 				System.out.print("CREATE WAVE");
 				Random random = new Random();
 				for(int count=1;count<5+(wave*2);count++) {
 
-					Soldier soldier=new Soldier(EnemyType.Soldier,random.nextInt(1,5),random.nextFloat(0.1f,0.2f));
+					Soldier soldier=new Soldier(EnemyType.Soldier,(int)getRandom(1,5),((float)getRandom(1,2))/10);
 					double min=-4;
 					double max=4;
-					soldier.GetGameObject().SetPosition(new Vector3f(random.nextFloat(-4f,4f),-1.5f,-200+random.nextInt(15)));
+					soldier.GetGameObject().SetPosition(new Vector3f((float)getRandom(-4,4),-1.5f,-200+(int)getRandom(1,15)));
 					soldier.GetGameObject().SetColor(new Vector4f(random.nextFloat(),random.nextFloat(),random.nextFloat(),1));
 					World.Instance().AddEnemy(soldier);
 				}
@@ -128,6 +134,7 @@ public class MainWindow {
 				tick=max_tick;
 				if(max_tick>100)
 					max_tick-=10;
+				System.out.print("End");
 		}
 		private void Loop() {
 			 GL.createCapabilities();

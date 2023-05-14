@@ -10,6 +10,7 @@ private Matrix4f _perpective;
 private ShaderProgram _mainShader;
 private Player _player;
 public final AudioSource Music;
+public final AudioSource Fun;
 public final AudioSource Shot;
 public final AudioSource Die;
 public final AudioSource Hit;
@@ -22,6 +23,7 @@ public Player GetPlayer() {return _player;}
 public Matrix4f GetPerspective() {return _perpective;}
 public World() {
 	Music=new AudioSource("music.ogg", true);
+	Fun=new AudioSource("fun.ogg",false);
 	Music.Play();
 	Shot=new AudioSource("shot.ogg", false);
 	Die=new AudioSource("die.ogg", false);
@@ -70,7 +72,7 @@ private void UpdateEnemies() {
 		
 		enemy.Move();
 		if(Vector3f.distance(enemy.GetGameObject().GetPosition().x, enemy.GetGameObject().GetPosition().y, enemy.GetGameObject().GetPosition().z,
-_player.GetGameObject().GetPosition().x, _player.GetGameObject().GetPosition().y, _player.GetGameObject().GetPosition().z)<0.5f)
+_player.GetGameObject().GetPosition().x, _player.GetGameObject().GetPosition().y, _player.GetGameObject().GetPosition().z)<1)
 			((Soldier) enemy).OnCollisionPlayer();
 		}
 	}

@@ -7,6 +7,7 @@ public class Entity {
 	public GameObject GetGameObject() {return _gameObject;}
     private int _health;
     private float _speed;
+    public void AddHealth(int c) {_health+=c;}
     public int GetHealth() {return _health;}
     public float GetSpeed() {return _speed;}
     public void Destroy() {

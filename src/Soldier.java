@@ -33,8 +33,15 @@ public class Soldier extends Enemy {
 	
 	public void OnCollisionPlayer() {
 		// TODO Auto-generated method stub
+		if(GetTypeEnemy()==EnemyType.Health) {
+			World.Instance().GetPlayer().AddHealth(1);
+			World.Instance().Fun.Play();
+		}
+		if(GetTypeEnemy()==EnemyType.Soldier) {
 		World.Instance().GetPlayer().Damage(1);
+		
 		World.Instance().HitPlayer.Play();
+		}
 		Destroy();
 	}
 

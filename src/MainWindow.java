@@ -1,3 +1,4 @@
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.*;
@@ -122,12 +123,20 @@ public class MainWindow {
 				System.out.print("CREATE WAVE");
 				Random random = new Random();
 				for(int count=1;count<5+(wave*2);count++) {
-
-					Soldier soldier=new Soldier(EnemyType.Soldier,(int)getRandom(1,5),((float)getRandom(1,2))/10);
+					float randomF=random.nextFloat();
+					int health=(int)getRandom(1,(int)(2+wave*0.5));
+					EnemyType resType=EnemyType.Soldier;
+					Vector4f _color=new Vector4f(0,1,1,1);
+					if(randomF<0.3f) {
+						resType=EnemyType.Health;
+						_color=new Vector4f(1,0,0,0);
+						health=1;
+					}
+					Soldier soldier=new Soldier(resType,health,((float)getRandom(1,(int)(2+wave*0.1)))/10);
 					double min=-4;
 					double max=4;
 					soldier.GetGameObject().SetPosition(new Vector3f((float)getRandom(-4,4),-1.5f,-200+(int)getRandom(1,15)));
-					soldier.GetGameObject().SetColor(new Vector4f(random.nextFloat(),random.nextFloat(),random.nextFloat(),1));
+					soldier.GetGameObject().SetColor(_color);
 					World.Instance().AddEnemy(soldier);
 				}
 				wave+=1;

@@ -54,7 +54,7 @@ public void Shot() {
 }
 public void Move(Vector3f moveVector) {
 	Vector3f resultVector=new Vector3f(GetGameObject().GetPosition().x+moveVector.x,GetGameObject().GetPosition().y+moveVector.y,GetGameObject().GetPosition().z+moveVector.z);
-	if(resultVector.x>-3f&&resultVector.x<3)
+	if(resultVector.x>-3.6f&&resultVector.x<3.6f)
 		GetGameObject().SetPosition(resultVector);
 }
 
